@@ -4,7 +4,7 @@ Group 5 PROHI, Stockholm University. Data: Enam Medical College, Bangladesh ([UC
 
 The project shows how cheap, routine tests can help a low-resource hospital find chronic kidney disease (CKD) early and decide who to refer. It covers four use cases: descriptive, diagnostic, predictive and prescriptive.
 
-**Live app:** [add the Streamlit link here]
+**Live app:** https://group5-ckd.streamlit.app/
 
 ## Contents
 
