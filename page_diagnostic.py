@@ -51,7 +51,7 @@ show(fig)
 st.caption("About one in five CKD patients has none of hypertension, diabetes, CAD or anaemia.")
 
 st.subheader("A simple decision tree")
-depth = st.slider("Tree depth (number of questions)", 1, 4, 3)
+depth = st.slider("Tree depth (number of questions)", 1, 4, 3, key="diag_depth")
 t = tree(depth, "all")
 fig, ax = plt.subplots(figsize=(12, 4 + depth))
 plot_readable_tree(ax, t, FEATURES, raw=raw, names=NAMES, fontsize=9)

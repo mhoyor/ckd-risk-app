@@ -25,7 +25,7 @@ st.caption("Cut-offs: WHO anaemia threshold, KDIGO albuminuria, ADA glucose thre
 
 st.subheader("Explore one variable")
 choices = ["hemo", "sg", "al", "bu", "sc", "bgr", "age", "bp limit", "bp"]
-col = st.selectbox("Variable", choices, format_func=lambda c: NAMES[c] + (f" ({UNITS[c]})" if c in UNITS else ""))
+col = st.selectbox("Variable", choices, key="desc_var", format_func=lambda c: NAMES[c] + (f" ({UNITS[c]})" if c in UNITS else ""))
 table = range_table(col)
 fig, ax = plt.subplots(figsize=(8, 3.6))
 grouped_bar(ax, table, f"{NAMES[col]} by group", "Range (low → high)")

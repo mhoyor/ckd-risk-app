@@ -18,8 +18,8 @@ st.caption("User: Clinical Care Coordinator · Two-step pathway: cheap checks fo
 # ---------------- thresholds and pathway ----------------
 st.subheader("Set the two thresholds")
 c1, c2 = st.columns(2)
-s_t = c1.slider("Step 1: send for blood tests if cheap-test risk is at least", 0.05, 0.95, 0.10, 0.05)
-r_t = c2.slider("Step 2: refer if full-model risk is at least", 0.05, 0.95, 0.30, 0.05)
+s_t = c1.slider("Step 1: send for blood tests if cheap-test risk is at least", 0.05, 0.95, 0.10, 0.05, key="thr_step1")
+r_t = c2.slider("Step 2: refer if full-model risk is at least", 0.05, 0.95, 0.30, 0.05, key="thr_step2")
 st.caption("Recommended: 0.10 at step 1 (miss nobody; a false alarm only costs a blood test) and 0.30 at step 2 "
            "(best balance of sensitivity and specificity, Youden's index).")
 
@@ -62,10 +62,11 @@ values = {}
 cols = st.columns(3)
 for k, col in enumerate(["age", "bp limit", "bp", "sg", "al", "su"]):
     opts = list(range(len(levels(col))))
-    values[col] = cols[k % 3].selectbox(NAMES[col], opts, index=defaults[col], format_func=lambda i, c=col: label(c, i))
+    values[col] = cols[k % 3].selectbox(NAMES[col], opts, index=defaults[col], format_func=lambda i, c=col: label(c, i),
+                                         key=f"intake_{col}")
 cols = st.columns(5)
 for k, col in enumerate(["htn", "dm", "cad", "appet", "pe"]):
-    values[col] = int(cols[k].toggle(NAMES[col], value=False))
+    values[col] = int(cols[k].toggle(NAMES[col], value=False, key=f"intake_{col}"))
 patient = pd.DataFrame([values])[CHEAP]
 risk = cheap_model.predict_proba(patient)[0, 1]
 rule_a = values["al"] >= 1 or values["htn"] == 1 or values["sg"] <= 2
@@ -82,8 +83,8 @@ c2.write("Rule says: **send for blood tests**" if rule_a else "Rule says: **no b
 # ---------------- referral slots ----------------
 st.subheader("Who gets the limited referral slots? (OR-Tools)")
 c1, c2 = st.columns(2)
-n_slots = c1.slider("Number of referral slots", 1, 30, 10)
-share = c2.slider("Minimum share of slots for early-stage patients (stage 2–3)", 0, 100, 50, 10,
+n_slots = c1.slider("Number of referral slots", 1, 30, 10, key="slots_n")
+share = c2.slider("Minimum share of slots for early-stage patients (stage 2–3)", 0, 100, 50, 10, key="slots_share",
                   help="Pasanka's rule: early-stage patients can still benefit most from referral. Set to 0 to switch off.")
 ids, status = choose_patients(n_slots, int(np.ceil(n_slots * share / 100)), r_t)
 ra = risk_all()
@@ -106,10 +107,12 @@ else:
 st.subheader("What-if: controlling blood pressure and glucose")
 mod = modifiable_model()
 c1, c2, c3, c4 = st.columns(4)
-bp = c1.selectbox("BP category", list(range(len(levels("bp limit")))), index=1, format_func=lambda i: label("bp limit", i))
-glu = c2.selectbox("Random glucose (mg/dL)", list(range(len(levels("bgr")))), index=2, format_func=lambda i: label("bgr", i))
-htn = int(c3.toggle("Hypertension", value=False))
-dm = int(c4.toggle("Diabetes", value=False))
+bp = c1.selectbox("BP category", list(range(len(levels("bp limit")))), index=1,
+                  format_func=lambda i: label("bp limit", i), key="whatif_bp")
+glu = c2.selectbox("Random glucose (mg/dL)", list(range(len(levels("bgr")))), index=2,
+                   format_func=lambda i: label("bgr", i), key="whatif_glu")
+htn = int(c3.toggle("Hypertension", value=False, key="whatif_htn"))
+dm = int(c4.toggle("Diabetes", value=False, key="whatif_dm"))
 X = pd.DataFrame([[bp, glu, htn, dm]], columns=["bp limit", "bgr", "htn", "dm"])
 now = mod.predict_proba(X)[0, 1]
 ctrl = X.copy(); ctrl["bp limit"] = 0; ctrl["bgr"] = 0

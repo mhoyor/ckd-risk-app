@@ -14,7 +14,7 @@ st.caption("User: Health Informatician · Models trained on 160 patients, checke
            "Detects current CKD, not future progression.")
 
 st.subheader("Compare models (repeated cross-validation on the training patients)")
-fs = st.radio("Tests used", ["All routine tests (25)", "Cheap tests (11)"], horizontal=True,
+fs = st.radio("Tests used", ["All routine tests (25)", "Cheap tests (11)"], horizontal=True, key="pred_set",
               help="Cheap tests = medical history, urine dipstick, blood pressure and age (no blood test).")
 st.dataframe(cv_compare(fs))
 st.caption("Baseline to beat: always saying 'CKD' gives sensitivity 1.00 but specificity 0.00 (accuracy 0.64). "
@@ -67,7 +67,7 @@ show(fig)
 st.caption("Orange: higher value or 'yes' raises the risk. Blue: higher value lowers the risk.")
 
 st.subheader("Score one test patient")
-pid = st.selectbox("Test patient (row number in the dataset)", list(test.index))
+pid = st.selectbox("Test patient (row number in the dataset)", list(test.index), key="pred_patient")
 row = test.loc[[pid]]
 c1, c2, c3 = st.columns(3)
 c1.metric("Actual diagnosis", "CKD" if row["class"].iloc[0] == 1 else "Non-CKD")
