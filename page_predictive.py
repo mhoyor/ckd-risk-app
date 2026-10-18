@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score
-from app_core import show, data, final_models, cv_compare, sens_spec, NAMES, CHEAP, label
+from app_core import show, data, final_models, cv_compare, sens_spec, NAMES, CHEAP, label, code_key, CODE_NOTES
 from data_prep import FEATURES
 from viz import MODEL_COLORS, MODEL_STYLES, MUTED
 
@@ -16,6 +16,11 @@ st.caption("User: Health Informatician · Models trained on 160 patients, checke
 st.subheader("Compare models (repeated cross-validation on the training patients)")
 fs = st.radio("Tests used", ["All routine tests (25)", "Cheap tests (11)"], horizontal=True, key="pred_set",
               help="Cheap tests = medical history, urine dipstick, blood pressure and age (no blood test).")
+with st.expander("📖 Code key: what the groups mean", expanded=False):
+    tab1, tab2 = st.tabs(["Cheap tests", "Blood tests"])
+    tab1.dataframe(code_key(["age", "bp limit", "sg", "al", "su"]), use_container_width=True)
+    tab2.dataframe(code_key(["hemo", "pcv", "bu", "sc", "bgr", "sod"]), use_container_width=True)
+    st.markdown(CODE_NOTES)
 st.dataframe(cv_compare(fs))
 st.caption("Baseline to beat: always saying 'CKD' gives sensitivity 1.00 but specificity 0.00 (accuracy 0.64). "
            "The notebook uses 10 repeats; the app uses 3 to stay fast, so the third decimal can differ.")

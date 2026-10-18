@@ -65,6 +65,37 @@ def label(col, code):
     return AL_LABELS.get(lab, lab) if col in ("al", "su") else lab
 
 
+def code_key(cols):
+    """Reference table: what each group code (0, 1, 2, ...) means for the chosen tests."""
+    lv = {c: [label(c, i) for i in range(len(levels(c)))] for c in cols}
+    if "bp limit" in lv:
+        lv["bp limit"] = ["lowest", "middle", "highest"]
+    if "al" in lv:
+        lv["al"] = ["none (normal)", "1+", "2+", "3+", "4+"]
+    if "su" in lv:
+        lv["su"] = ["none (normal)", "1–2+", "2+", "3–4+", "4+", "above 4+"]
+    n = max(len(v) for v in lv.values())
+    table = {"Code": list(range(n))}
+    for c in cols:
+        head = NAMES[c] + (f" ({UNITS[c]})" if c in UNITS else "")
+        table[head] = lv[c] + [""] * (n - len(lv[c]))
+    return pd.DataFrame(table).set_index("Code")
+
+
+CODE_NOTES = (
+    "**How to read the codes.** Every lab value in this dataset was recorded as a range, so each range gets a code "
+    "in medical order: 0 is the lowest range, and each step up is the next range. \n"
+    "- **Yes/no tests** (hypertension, diabetes, coronary artery disease, poor appetite, pedal oedema, BP flag): "
+    "0 = no / normal, 1 = yes / raised.  \n"
+    "- **BP category:** 0 = lowest, 1 = middle, 2 = highest. The dataset does not give the mmHg cut-offs; "
+    "category 2 was only seen in CKD patients.  \n"
+    "- **Urine albumin and sugar:** 0 = none found (normal); 1 or more = found on the dipstick (abnormal).  \n"
+    "- **Urine specific gravity:** lower codes = more dilute urine. Codes 0–2 (≤ 1.017) are part of the backup "
+    "intake rule.  \n"
+    "- **CKD stage** (referral table): s1 = earliest, s5 = kidney failure. Early stage here means s2–s3."
+)
+
+
 def sens_spec(y_true, flagged):
     tn, fp, fn, tp = confusion_matrix(y_true, flagged, labels=[0, 1]).ravel()
     return tp / (tp + fn), tn / (tn + fp), int(tp), int(fn), int(fp), int(tn)

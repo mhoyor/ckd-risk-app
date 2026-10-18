@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 from app_core import (show, data, final_models, cv_risk_train, risk_all, threshold_table, sens_spec, choose_patients,
-                      modifiable_model, levels, label, NAMES, CHEAP)
+                      modifiable_model, levels, label, NAMES, CHEAP, code_key, CODE_NOTES)
 from data_prep import FEATURES
 from viz import MUTED, TEXT
 
@@ -57,6 +57,10 @@ m5.metric("False referrals", int((referred & (y == 0)).sum()))
 
 # ---------------- intake check ----------------
 st.subheader("Check a new patient at intake (cheap tests only)")
+
+with st.expander("📖 Code key: what the groups mean (open this when picking values)", expanded=False):
+    st.dataframe(code_key(["age", "bp limit", "sg", "al", "su", "bgr"]), use_container_width=True)
+    st.markdown(CODE_NOTES)
 defaults = {"age": 5, "bp": 0, "bp limit": 0, "sg": 4, "al": 0, "su": 0}
 values = {}
 cols = st.columns(3)
@@ -120,8 +124,9 @@ after = mod.predict_proba(ctrl)[0, 1]
 k1, k2 = st.columns(2)
 k1.metric("Model risk now", f"{now:.2f}")
 k2.metric("If BP category 0 and glucose in the lowest range", f"{after:.2f}", f"{after - now:+.2f}", delta_color="inverse")
-odds = pd.Series(np.exp(mod.coef_[0]), index=["BP category (per step)", "Glucose (per range step)",
-                                              "Hypertension", "Diabetes"]).round(2)
+odds = pd.Series(np.exp(mod.coef_[0]), index=["BP category (per code step, e.g. 0 → 1)",
+                                              "Glucose (per code step, e.g. < 112 → 112–154)",
+                                              "Hypertension (no → yes)", "Diabetes (no → yes)"]).round(2)
 st.dataframe(odds.rename("Odds ratio"))
 st.caption("Associations from one-visit data: this shows how the model's risk responds, not proof that treatment "
            "works. Controlling glucose does not remove a diabetes diagnosis.")
