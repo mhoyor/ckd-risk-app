@@ -26,6 +26,7 @@ The project shows how cheap, routine tests can help a low-resource hospital find
 1. Open a notebook on GitHub and click **Open in Colab**, or upload it in Colab with File → Upload notebook.
 2. In the first code cell, set `GITHUB_USER = "mhoyor"`.
 3. Click Runtime → Run all. Each notebook shows the expected results next to every step.
+Note: 04_prescriptive.ipynb installs OR-Tools automatically. The last cell of each notebook downloads the charts as a zip; it works only in Colab and can be skipped
 
 ## How to run the app
 
@@ -42,9 +43,28 @@ streamlit run app.py
 
 **On your own computer (Python 3.10 or newer):** the same two commands in a terminal inside this folder.
 
+## Reproducing the results in the report
+
+All results use a fixed random seed (random_state=42) and the same 160/40 train/test split, so they reproduce exactly.
+
+| Report item | Produced by |
+|---|---|
+| Section 2: 200 patients (128/72), 25 predictors, 160/40 split | data_prep.py |
+| Use case 1: Table 1 and Figure 1 | 01_descriptive.ipynb |
+| Use case 2: 25 tests, Bonferroni α = 0.002, Figure 2 | 02_diagnostic.ipynb |
+| Use case 3: Table 2 and Figure 3 | 03_predictive.ipynb |
+| Use case 4: thresholds 0.10/0.30, 435 tests avoided per 1,000, intake rule, odds ratios, pathway 40 → 33 → 26, optimiser | 04_prescriptive.ipynb |
+| Use case 4: what-if example (0.67 → 0.15) | App, Prescriptive page |
+| Appendix D: Table D1 | 05_feature_engineering.ipynb |
+
+## What was not done or did not work
+
+- Progression prediction: one visit per patient, so the models detect current CKD only.
+- Exact clinical thresholds: lab values are ranges and diastolic blood pressure is a 0/1 flag, so exact cut-offs (e.g. in mmHg) cannot be derived.
+- LLM explanation feature: planned as an optional backlog item but not built.
+
 ## Important limitations
 
 - The non-CKD group has no comorbidities and no abnormal urine results, so results are probably better than in a typical clinic.
-- One visit per patient: the models detect current CKD, not future progression.
 - All lab values are given as ranges, not exact numbers.
 - 200 patients from one hospital. The tool supports clinical judgement; it does not replace it.
